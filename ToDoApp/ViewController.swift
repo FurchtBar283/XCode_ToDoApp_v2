@@ -19,6 +19,7 @@ class ViewController: UITableViewController {
     // Wird in Segue zu ShowDetailsViewController als Key übergeben, um die entsprechenden..
     // .. Dictionary-Einträge abzurufen.
     var dictKeyIdentifier = Int.init()
+    var amountOfData = Int.init()
     
     @IBOutlet var tableViewOutlet: UITableView!
     
@@ -31,23 +32,54 @@ class ViewController: UITableViewController {
         fetchDatabase()
         // Aktualisieren der TableView.
         tableViewOutlet.reloadData()
-        
-        // Ausgaben zu Testzwecken.
-        /*
-        print(self.dataFromCoreData["Optional(Bierhoff )"])
-        print("blabla")
-        let person = dataFromCoreData["Optional(Bierhoff )"]!
-        
-        let text = person["toDoName"]
-        let text2 = person["toDoDate"]
-        print(text)
-        print(text2)
-        */
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func deleteEntryInDatabase(toDoNameToDelete: String) {
+        // Zugriff auf CoreData.
+        let appDel: AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        // ManagedObjectContext verwaltet sämtliche Datenobjekte.
+        let context: NSManagedObjectContext = appDel.managedObjectContext
+        
+        // Daten aus CoreData abfragen.
+        do {
+            // Request an die Entity "ToDos".
+            let request = NSFetchRequest(entityName: "ToDos")
+            // Rückgabewerte des Requests.
+            let results = try context.executeFetchRequest(request)
+            
+            if results.count > 0 {
+                for item in results as! [NSManagedObject] {
+                    // Zwischenspeicherung der CoreDataWerte im Dictionary dataFromCoreData.
+                    dataFromCoreData["\(item.valueForKey("toDoName")!)"] = ["toDoName": "\(item.valueForKey("toDoName")!)",
+                        "toDoDesc": "\(item.valueForKey("toDoDesc")!)",
+                        "toDoEstim": "\(item.valueForKey("toDoEstim")!)",
+                        "toDoDate": "\(item.valueForKey("toDoDate")!)"]
+                    
+                    // Test-Ausgabe.
+                    //print(dataFromCoreDataToDelete["\(item.valueForKey("toDoName")!)"]!["toDoName"]!)
+                    if dataFromCoreData["\(item.valueForKey("toDoName")!)"]!["toDoName"]! == toDoNameToDelete {
+                        dataFromCoreData.removeValueForKey(toDoNameToDelete)
+                        context.deleteObject(item)
+                        if item.deleted {
+                            print("ToDo \"\(toDoNameToDelete)\" successfully deleted.")
+                            do {
+                                try context.save()
+                            } catch {
+                                print("Error while trying to delete object in CoreData in function deleteEntryInDatabase.")
+                            }
+                        }
+                    }
+                }
+            }
+            
+        } catch {
+            print("Error while trying to fetch data from CoreData in function deleteEntryInDatabase.")
+        }
     }
     
     func fetchDatabase() {
@@ -78,13 +110,13 @@ class ViewController: UITableViewController {
                         "toDoDesc": "\(item.valueForKey("toDoDesc")!)",
                         "toDoEstim": "\(item.valueForKey("toDoEstim")!)",
                         "toDoDate": "\(item.valueForKey("toDoDate")!)"]
-                    
+                    // Test-Ausgabe.
                     //print(dataFromCoreData["\(name)"])
                 }
             }
             
         } catch {
-            print("Error while trying to fetch data from CoreData in function fetchDatabase")
+            print("Error while trying to fetch data from CoreData in function fetchDatabase.")
         }
     }
     
@@ -180,6 +212,7 @@ class ViewController: UITableViewController {
         } else {
             // Der Cell den Key(toDoName) vom Dictionary(dataFromCoreData) als Text zuweisen.
             cell.textLabel?.text = key
+            cell.textLabel?.textColor = UIColor.blackColor()
         }
         
         // Alte Umsetzung der Idee.
@@ -213,7 +246,7 @@ class ViewController: UITableViewController {
     
     // Reagiert wenn eine Zelle angewählt wurde.
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print("Selected cell: \(indexPath.row)")
+        print("Selected cell at indexPath.row = \(indexPath.row).")
         
         // Idee: performSegueWithIdentifier (manueller Segue mit indexPath.row).
         dictKeyIdentifier = indexPath.row
@@ -228,7 +261,12 @@ class ViewController: UITableViewController {
     // Mit dieser Funktion kann man auf die Delete/Edit-Anweisungen reagieren.
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         if editingStyle == .Delete {
-            print("Deleting cell: \(indexPath.row)")
+            print("Deleting cell at indexPath.row = \(indexPath.row).")
+            
+            let nameOfDeletedToDo = dataFromCoreDataWithIndexPathAsKey["\(indexPath.row)"]!["toDoName"]!
+            deleteEntryInDatabase(nameOfDeletedToDo)
+            //fetchDatabase()
+            self.tableViewOutlet.reloadData()
             
             // Versuch Daten aus CoreData wieder zu löschen.
             /* http://www.learncoredata.com/create-retrieve-update-delete-data-with-core-data/

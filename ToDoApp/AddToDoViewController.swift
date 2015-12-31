@@ -11,7 +11,6 @@ import CoreData
 
 class AddToDoViewController: UIViewController, UITextFieldDelegate {
     
-    //lazy var chosenDate: NSDate = NSDate()
     var chosenDateAsString = ""
     var toDoNameAsString = ""
     var toDoDescriptionAsString = ""
@@ -41,6 +40,8 @@ class AddToDoViewController: UIViewController, UITextFieldDelegate {
             
             self.presentViewController(alert, animated: true, completion: nil)
         } else {
+            // Auf nicht gesetztes Datum prüfen.
+            checkDate()
             // Zugriff auf CoreData.
             let appDel: AppDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
             // ManagedObjectContext verwaltet sämtliche Datenobjekte.
@@ -61,7 +62,7 @@ class AddToDoViewController: UIViewController, UITextFieldDelegate {
             do {
                 try context.save()
             } catch {
-                print("Error while trying to save data in CoreData in function saveButtonClicked")
+                print("Error while trying to save data in CoreData in function saveButtonClicked.")
             }
             
             // Textfelder wieder zurücksetzen.
@@ -78,6 +79,16 @@ class AddToDoViewController: UIViewController, UITextFieldDelegate {
     }
     
     
+    // Funktion prüft auf den Fall, dass kein Datum gewählt wurde und setzt das aktuelle.
+    func checkDate() {
+        if chosenDateAsString == "" {
+            let dateFormatter = NSDateFormatter()
+            dateFormatter.dateFormat = "dd.MM.yyyy hh:mm"
+            // sender.date ist vom Datentyp NSDate.
+            chosenDateAsString = dateFormatter.stringFromDate(NSDate())
+        }
+    }
+    
     // Implementierte Funktion von UITextFieldDelegate.
     // Reagiert auf gedrückten Return-Button innerhalb der beiden Textfelder.
     // Wichtig: Outlets müssen vorher beim ViewController als OutletDelegate registriert werden!
@@ -93,7 +104,7 @@ class AddToDoViewController: UIViewController, UITextFieldDelegate {
             toDoEstimatedTimeAsString = toDoEstimatedTimeTextfieldOutlet.text!
             toDoEstimatedTimeTextfieldOutlet.resignFirstResponder()
         default:
-            print("Wrong case in func textFieldShouldReturn AddToDoViewController")
+            print("Wrong case in func textFieldShouldReturn AddToDoViewController.")
         }
 
         return true
@@ -107,7 +118,7 @@ class AddToDoViewController: UIViewController, UITextFieldDelegate {
             destinationController.toDoDescription = toDoDescriptionAsString
             destinationController.toDoEstimatedTime = toDoEstimatedTimeAsString
         } else if segue.identifier == "SaveButton" {
-            print("segue.identifier: \(segue.identifier)")
+            print("Segue.identifier: \(segue.identifier).")
         }
     }
  
