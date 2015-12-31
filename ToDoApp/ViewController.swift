@@ -19,7 +19,6 @@ class ViewController: UITableViewController {
     // Wird in Segue zu ShowDetailsViewController als Key übergeben, um die entsprechenden..
     // .. Dictionary-Einträge abzurufen.
     var dictKeyIdentifier = Int.init()
-    var amountOfData = Int.init()
     
     @IBOutlet var tableViewOutlet: UITableView!
     
