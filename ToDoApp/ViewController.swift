@@ -11,7 +11,6 @@ import CoreData
 
 class ViewController: UITableViewController {
     
-    //
     var dataFromCoreData = [String: [String: String]]()
     // Konvertieren des Dictionaries(dataFromCoreData) in func tableView cellForRowAtIndexPath..
     // .. in dataFromCoreDataWithIndexPathAsKey..
